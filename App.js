@@ -1,97 +1,122 @@
 import React from 'react';
-import { StyleSheet, Platform, Image, Text, View, ScrollView } from 'react-native';
-
+import { Animated,  AppRegistry, Button, Easing, StyleSheet, Platform, Image, Text, View, ScrollView } from 'react-native';
+import { StackNavigator } from 'react-navigation'
 import firebase from 'react-native-firebase';
+import moment from 'moment';
+import Cal from './Cal.js';
+import FadeInView from './AnimateA.js';
+import ctrylist from './ctrylist';
+const database = firebase.database()
 
-export default class App extends React.Component {
-  constructor() {
-    super();
+class App extends React.Component {
+  constructor(props) {
+    super(props);
     this.state = {
-      // firebase things?
+        isAuthenticated: false,
+        yesStartDateText: moment().subtract(180, 'days').format("MMMM Do YYYY"),
+        yesStartDateDigit: moment().subtract(180, 'days').format("YYYY-MM-DD"),
+        todaysDate: moment().format("YYYY-MM-DD"),
+        modalVisible: false,
+
     };
+    this.animatedValue = new Animated.Value(0)
+    this.animate = this.animate.bind(this)
+    this.makeList = this.makeList.bind(this)
+  }
+  animate (easing) {
+    this.animatedValue.setValue(0)
+      Animated.timing(
+        this.animatedValue,
+        {
+          toValue: 100,
+          duration: 1000,
+          easing
+        }
+    ).start()
   }
 
   componentDidMount() {
-    // firebase things?
+    firebase.auth().signInAnonymouslyAndRetrieveData()
+      .then(() => {
+        this.setState({
+          authObj: firebase.auth(),
+          isAuthenticated: true,
+          uid: firebase.auth()._user.uid,
+        });
+      });
+    ;
+       database.ref('records/').on('value', (snapshot) =>{
+         this.setState({
+          snp: snapshot._value,
+          diEU: snapshot._value.daysInEU,
+          diL: snapshot._value.daysLeft,
+          mkddts: snapshot._value.markedDates
+        })
+         console.log(snapshot._value.daysInEU)
+      })
   }
+  makeList(li) {
 
+  }
   render() {
+    this.makeList(ctrylist)
+/*var listItems = ctrylist.map(ctry, idx) => {
+
+}*/
+    var lst = []
+    for(let i = 0; i < ctrylist.length; i++) {
+      if(!ctrylist[i].europe) {
+        lst.push(<Text style={styles.other}>{ctrylist[i].name}</Text>)
+      } else if(ctrylist[i].schengen) {
+        lst.push(<Text style={styles.schen}>{ctrylist[i].name}</Text>)
+      }  else {
+        lst.push(<Text style={styles.eur}>{ctrylist[i].name}</Text>)
+      }
+    }
+
+  const { navigate } = this.props.navigation;
+    // If the user has not authenticated
+    if (!this.state.isAuthenticated) {
+      return null;
+    }
+
     return (
-      <ScrollView>
-        <View style={styles.container}>
-        <Image source={require('./assets/RNFirebase.png')} style={[styles.logo]} />
-        <Text style={styles.welcome}>
-          Welcome to the React Native{'\n'}Firebase starter project!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        {Platform.OS === 'ios' ? (
-          <Text style={styles.instructions}>
-            Press Cmd+R to reload,{'\n'}
-            Cmd+D or shake for dev menu
-          </Text>
-        ) : (
-          <Text style={styles.instructions}>
-            Double tap R on your keyboard to reload,{'\n'}
-            Cmd+M or shake for dev menu
-          </Text>
-        )}
-        <View style={styles.modules}>
-          <Text style={styles.modulesHeader}>The following Firebase modules are enabled:</Text>
-          {firebase.admob.nativeModuleExists && <Text style={styles.module}>Admob</Text>}
-          {firebase.analytics.nativeModuleExists && <Text style={styles.module}>Analytics</Text>}
-          {firebase.auth.nativeModuleExists && <Text style={styles.module}>Authentication</Text>}
-          {firebase.crashlytics.nativeModuleExists && <Text style={styles.module}>Crashlytics</Text>}
-          {firebase.firestore.nativeModuleExists && <Text style={styles.module}>Cloud Firestore</Text>}
-          {firebase.messaging.nativeModuleExists && <Text style={styles.module}>Cloud Messaging</Text>}
-          {firebase.links.nativeModuleExists && <Text style={styles.module}>Dynamic Links</Text>}
-          {firebase.iid.nativeModuleExists && <Text style={styles.module}>Instance ID</Text>}
-          {firebase.notifications.nativeModuleExists && <Text style={styles.module}>Notifications</Text>}
-          {firebase.perf.nativeModuleExists && <Text style={styles.module}>Performance Monitoring</Text>}
-          {firebase.database.nativeModuleExists && <Text style={styles.module}>Realtime Database</Text>}
-          {firebase.config.nativeModuleExists && <Text style={styles.module}>Remote Config</Text>}
-          {firebase.storage.nativeModuleExists && <Text style={styles.module}>Storage</Text>}
+      <View>
+      <View>
+        <Text>Schengentracker</Text>
         </View>
-        </View>    
-      </ScrollView>
+        <ScrollView style={{height: 300}}>{lst}</ScrollView>
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between',height: 30}}><Text style={{fontSize: 20}}>{this.state.diEU} Days In</Text><Text style={{fontSize: 20}}>{this.state.diL} Days Left</Text></View>    
+        <FadeInView ><Text>Welcome to SchengenTracker</Text></FadeInView>
+        <View style={{}}>
+       <Button
+          onPress={() => navigate('Cal', {data: this.state})}
+          title="Yes"
+          color="#000099"
+          accessibilityLabel="Learn more about this purple button"
+/>
+        </View>
+              
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  logo: {
-    height: 80,
-    marginBottom: 16,
-    marginTop: 32,
-    width: 80,
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  modules: {
-    margin: 20,
-  },
-  modulesHeader: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  module: {
-    fontSize: 14,
-    marginTop: 4,
-    textAlign: 'center',
-  }
+
+schen: {
+  color: 'green'
+},
+eur: {
+  color: 'blue'
+},
+other: {
+  color: 'red'
+}
 });
+export const schengentracker = StackNavigator({
+  App: { screen: App },
+  Cal: { screen: Cal}
+});
+
+AppRegistry.registerComponent('schengentracker', () => schengentracker);

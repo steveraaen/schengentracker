@@ -1,4 +1,4 @@
-package com.invertase.rnfirebasestarter;
+package com.ndrblt.schengentracker;
 
 import android.app.Application;
 
