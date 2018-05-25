@@ -53,7 +53,7 @@ class Cal extends React.Component {
   } 
 writeUserData(uid, mkd, di, dl) {
 	console.log('clicked')
-  database.ref('records').set({
+  database.ref(uid).set({
   	 uid: uid,
     markedDates: mkd,
     daysInEU: di,
@@ -79,6 +79,8 @@ writeUserData(uid, mkd, di, dl) {
     return (
       <View style={{flex: 1}}>
         <Calendar
+            
+            theme={{ calendarBackground: 'black'}}
             // we use moment.js to give the minimum and maximum dates.
             minDate={_minDate}
             maxDate={_maxDate}

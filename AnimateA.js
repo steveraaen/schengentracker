@@ -1,5 +1,5 @@
 import React from 'React';
-import { Agenda, Animated, Button, StyleSheet, Platform, Image, Text, View, ScrollView } from 'react-native';
+import { Agenda, Animated, Button, StyleSheet, Platform, ProgressViewIOS, Image, Text, View, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars' 
 import ctrylist from './ctrylist';
 import moment from 'moment';
@@ -28,45 +28,41 @@ export default class FadeInView extends React.Component {
    	dayCount: 0
   		}	
   		this.calcDays = this.calcDays.bind(this)
-  		this.makeGrid = this.makeGrid.bind(this)
 	}
 
   calcDays() {
-	var randC = this.state.ctrEU[Math.floor(Math.random()*this.state.ctrEU.length)]
-	this.setState({ctry: randC,  dayCount: this.state.dayCount + 1}, () => {
-	if(this.state.ctry.schengen) {
-  		this.setState({curCol: 'red', daysIn: this.state.daysIn + 1, daysLeft: this.state.daysLeft - 1})
-    	} else {
-    		this.setState({curCol: 'green'})
-    	}
-	})
-
+  var randC = this.state.ctrEU[Math.floor(Math.random()*this.state.ctrEU.length)]
+  this.setState({ctry: randC,  dayCount: this.state.dayCount + 1, curDay: moment().add(this.state.dayCount, 'days').format('MMM DD')}, () => {
+    
+  if(this.state.ctry.schengen && this.state.ctry.europe) {
+      this.setState({curCol: 'red', daysIn: this.state.daysIn + 1, daysLeft: this.state.daysLeft - 1})
+      } else if (!this.state.ctry.schengen && this.state.ctry.europe){
+        this.setState({curCol: 'green'})
+      } else if (!this.state.ctry.schengen && !this.state.ctry.europe){
+        this.setState({curCol: 'blue'})
+      } if(this.state.daysLeft < 1) {
+        clearInterval(this.inta)
+        alert("You have spent 90 out of the past 180 days in the Schengen Zone")
+        
+      }
+  })
   }
 componentWillMount() {
-	var inta = setInterval(this.calcDays, 1000)	
+	var inta = setInterval(this.calcDays, 1500)	
 }
-makeGrid() {
-/*	var x = 26;
-	var y = 7;
-	var xy=[]
-	for(let i = 0; i < y; i++) {
-		for(j = 0; j < x; j++) {
-			 xy.push(<View style={{flex: .03, height: 10, backgroundColor: 'pink'}}><Text key={i}>{i}</Text></View>)
-		}
-	}
-	console,log(xy) */
-}
+
   componentDidMount() {
     var ctrsInEU = []
+    var ctrsAll = []
     for (let i = 0; i < ctrylist.length; i++) {
-    	if(ctrylist[i].europe) [
-    		ctrsInEU.push(ctrylist[i])]
+      ctrsAll.push(ctrylist[i])
+      if(ctrylist[i].europe) {
+        ctrsInEU.push(ctrylist[i])
+      }
     }
-    this.setState({ctrEU: ctrsInEU}, () => this.calcDays())
+    this.setState({ctrEU: ctrsInEU, ctrsAll: ctrsAll}, () => this.calcDays())
 
   }
-
-
   render() {
 
 const styles = StyleSheet.create({
@@ -156,18 +152,27 @@ names: {
 
   	var randomCtry = this.state.ctry
 		
-			return (
-				<View style={styles.container}>	
-				<View style={{marginLeft: 10, marginBottom: 12}}><Text style={{color: 'gray', fontSize: 12, fontWeight: 'bold'}}>You are in {this.state.ctryName}</Text></View>			
-				<View style={{justifyContent: 'center'}}>
-					<View style={{backgroundColor: 'black', height: 120, alignItems: 'center'}}><View style={styles.eurBoxEU}><Animatable.Text animation="slideInDown"style={styles.eurBoxText}>{moment().add(this.state.dayCount, 'days').format('MMM DD')}</Animatable.Text></View></View>
-					<View style={{backgroundColor: 'black', height: 120}}><Animatable.Text animation="rotate" style={styles.europe}>{randomCtry.name}</Animatable.Text></View>				
-				<View style={{height: 50}}><Text style={styles.other}>Days In Schengen Area :  {this.state.daysIn} </Text></View>
-				<View><Text style={styles.other}>Days Left in Schengen Area: {this.state.daysLeft}</Text></View>
-				</View>
-				<View style={{justifyContent: 'flex-end'}}><Text style={styles.other}>Last Day in EU {moment().add(this.state.daysLeft, 'days').format("LL")}</Text></View>
-				</View>
-				)
+      return (
+        <View style={styles.container}> 
+        <View style={{justifyContent: 'center'}}>
+          <View style={{alignItems: 'center'}}><View style={styles.eurBoxEU}><Animatable.Text animation="slideInDown"style={styles.eurBoxText}>{moment().add(this.state.dayCount, 'days').format('MMM DD')}</Animatable.Text></View></View>
+          <View style={{marginTop: 18}}><Animatable.Text animation="rotate" style={styles.europe}>{randomCtry.name}</Animatable.Text></View>        
+        <View style={{height: 50}}>
+          <View><Text style={styles.other}>Days In Schengen Area</Text></View>
+          <View><Text style={styles.other}>  {this.state.daysIn} </Text></View>
+        </View>
+        <View style={{height: 50}}>
+          <View><Text style={styles.other}>Days Left In Schengen Area</Text></View>
+          <View><Text style={styles.other}>  {this.state.daysLeft} </Text></View>
+        </View>
+        </View>
+        <View style={{marginTop: 16}} ><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysIn / 90}/></View>
+        <View style={{marginTop: 16}}>
+          <View ><Text style={styles.other}>You'll have to leave by</Text></View>
+          <View><Text style={styles.other}> {moment(this.state.curDay).add(this.state.daysLeft, 'days').format("LL")}</Text></View>
+        </View>
+        </View>
+        )
 		
 }
     	return (
