@@ -1,6 +1,6 @@
 console.disableYellowBox = true;
 import React from 'react';
-import { Animated,  AppRegistry, Button, Dimensions, Easing, Image, StyleSheet, Platform, ProgressViewIOS, Text, TouchableWithoutFeedback, View, ScrollView } from 'react-native';
+import { Animated,  AppRegistry, Button, Dimensions, Easing, Image, StyleSheet, Platform, ProgressViewIOS, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { StackNavigator } from 'react-navigation'
 import { Calendar } from 'react-native-calendars' 
 import firebase from 'react-native-firebase';
@@ -38,8 +38,11 @@ class App extends React.Component {
         height: Dimensions.get('window').height,
         curCol: 'salmon',
         _markedDates: initialState,
+        diEU: 0,
+        dlEU:90
+       /* uid: null*/
 
-    };
+    }; 
         Dimensions.addEventListener('change', () => {
         this.setState({
             orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
@@ -47,18 +50,12 @@ class App extends React.Component {
             height: Dimensions.get('window').height
         });
     });
-  firebase.auth().signInAnonymouslyAndRetrieveData()
-  .then(() => {
-    this.setState({
-      authObj: firebase.auth(),
-      isAuthenticated: true,
-      uid: firebase.auth()._user.uid,
-    });
-  });
 ;
     this.calcDays = this.calcDays.bind(this)
     this.revGeocode = this.revGeocode.bind(this)
     this.writeUserData = this.writeUserData.bind(this)
+    this.resetDays = this.resetDays.bind(this)
+
   }
     revGeocode(lat, lng) {      
     var lat= parseFloat(this.state.uLatitude).toFixed(6); 
@@ -114,23 +111,33 @@ for (let i = 0; i < ctrylist.length; i++) {
     ).start()
   }
 componentWillMount() {
-
-       database.ref(this.state.uid).on('value', (snapshot) =>{
+  firebase.auth().signInAnonymouslyAndRetrieveData()
+  .then(() => {
+   
+    this.setState({
+      authObj: firebase.auth(),
+      isAuthenticated: true,
+      uid: firebase.auth()._user.uid,
+    }, () => {
+             database.ref('users/' + this.state.uid).on('value', (snapshot) =>{
          this.setState({
-          snp: Object.values(snapshot._value)[0],
-          diEU: Object.values(snapshot._value)[0].daysInEU,
-          dlEU: Object.values(snapshot._value)[0].daysLeft,
-          lastDay: moment().add(Object.values(snapshot._value)[0].daysInEU, 'days').format('MMMM Do YYYY'),
-          mkddts: Object.values(snapshot._value)[0].markedDates
+          snp: snapshot.val(),
+          diEU: snapshot.val().daysInEU,
+          dlEU: snapshot.val().daysLeft,
+          lastDay: moment().add(snapshot.val().daysInEU, 'days').format('MMMM Do YYYY'),
+          mkddts: snapshot.val().markedDates
         })
-         console.log(Object.values(snapshot._value)[0].daysInEU)
-      })                          
-  axios.get('https://api.opencagedata.com/geocode/v1/json?q='+ parseFloat(this.state.uLatitude).toFixed(6) +',' + parseFloat(this.state.uLongitude).toFixed(6) + '&pretty=1&key=7972b0994b65ec093e1dfb49909b9667')
+         console.log(snapshot.val().daysInEU)
+      }) 
+    });
+  });
+                         
+  axios.get('https://api.opencagedata.com/geocode/v1/json?q='+ parseFloat(this.state.uLongitude).toFixed(6) +',' + parseFloat(this.state.uLatitude).toFixed(6) + '&pretty=1&key=7972b0994b65ec093e1dfb49909b9667')
     .then((docs) => { 
-      console.log(docs)
-      this.setState({flag: docs.data.results[0].annotations.flag})  })
+      this.setState({ocage: docs, flag: docs.data.results[0].annotations.flag})  })
 }
   componentDidMount() {
+
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -161,37 +168,34 @@ componentWillMount() {
 
   }
   calcDays(mds) {
-    console.log('calcDays called')
-    var di = this.state.diEU;
-    var dl = this.state.dlEU;
+    console.log(mds)
+    var mkdarr = []
     for( let mkds in mds) {
       if(mds[mkds].marked) {
-        di = di + 1;
-        dl = dl - 1
+        mkdarr.push(mds[mkds])
       }
-      console.log(di, dl)
+      console.log(mkdarr)
       this.setState({
-        daysInEU: di,
-        daysLeft: dl
+        daysInEU: mkdarr.length,
+        daysLeft: 90 - mkdarr.length
       }, () => {
         this.writeUserData(this.state.uid, this.state._markedDates, this.state.daysInEU, this.state.daysLeft)
       })
     }
   } 
-  writeUserData(uid, mkd, di, dl) {
+  writeUserData(uid, mkd, wdi, wdl) {
   console.log('clicked')
-  database.ref(uid).set({
+  database.ref('users/' + uid).set({
      uid: uid,
     markedDates: mkd,
-    daysInEU: di,
-    daysLeft: dl
+    daysInEU: wdi,
+    daysLeft: wdl
   });
 } 
   onDaySelect = (day) => {
       const _selectedDay = moment(day.dateString).format(_format);      
       let marked = true;
       console.log(_selectedDay)
-      console.log(this.stat)
       if (this.state._markedDates[_selectedDay]) {
         marked = !this.state._markedDates[_selectedDay].marked;
       }
@@ -199,6 +203,9 @@ componentWillMount() {
       this.setState({ _markedDates: updatedMarkedDates }, () =>
           this.calcDays(this.state._markedDates)
         );
+  }
+  resetDays() {
+    this.setState({diEU: 0, dlEU:90})
   }
   render() {
     this.styles = StyleSheet.create({
@@ -276,6 +283,12 @@ otherIn: {
             onPress={() => navigate('Cal', {data: this.state})}
             title="FIView" 
           />
+          <Icon name="ios-refresh-outline" 
+            size={30} 
+            color="#F5DEB3"
+            onPress={() => this.resetDays()}
+            title="FIView" 
+          />
             <View style={{alignItems: 'center'}}>
               <View style={this.styles.eurBoxEU}>
                 <Animatable.Text animation="slideInDown"style={this.styles.eurBoxText}>{moment().format('MMM DD')}</Animatable.Text>
@@ -287,11 +300,11 @@ otherIn: {
           <View style={{flexDirection: 'row'}}>
             <View style={{flex: .5, flexDirection: 'column', marginTop: 18}}>
               <Text style={this.styles.otherIn}>Days In</Text>
-              <Text style={this.styles.eurBoxText}>{this.state.daysInEU}</Text>
+              <Text style={this.styles.eurBoxText}>{this.state.diEU}</Text>
             </View>
             <View style={{flex: .5, flexDirection: 'column', marginTop: 18}}>
               <Text style={this.styles.otherLeft}>Days Left</Text>
-              <Text style={this.styles.eurBoxText}>{this.state.daysLeft}</Text>
+              <Text style={this.styles.eurBoxText}>{this.state.dlEU}</Text>
             </View>
           </View>
                   <View style={{marginTop: 14, marginBottom: 14}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
@@ -306,6 +319,7 @@ otherIn: {
                 // hideArrows={true}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state._markedDates}
+             
             />              
         </View>
       </View>
