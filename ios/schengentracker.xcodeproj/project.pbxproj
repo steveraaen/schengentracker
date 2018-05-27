@@ -39,7 +39,7 @@
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		A038CD85D39748E122AC50D7 /* libPods-schengentracker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 333056BA5B7ADABE709DF4A1 /* libPods-schengentracker.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
-		ECA47B4720B842E900B02D37 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = ECA47B4620B842E900B02D37 /* GoogleService-Info.plist */; };
+		EC05A43720BB678200BACFE3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EC05A43620BB678200BACFE3 /* GoogleService-Info.plist */; };
 		ECA47B8320B8661F00B02D37 /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ECA47B8220B8661F00B02D37 /* Ionicons.ttf */; };
 		ECA47B8420B8664500B02D37 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB61A68108700A75B9A /* Info.plist */; };
 /* End PBXBuildFile section */
@@ -357,7 +357,7 @@
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		ADF4CB3C3BF44D3EBA8B78C4 /* RNFirebase.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNFirebase.xcodeproj; path = "../node_modules/react-native-firebase/ios/RNFirebase.xcodeproj"; sourceTree = "<group>"; };
 		B7AFA8AA9A1CFD17320E9074 /* Pods-schengentracker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-schengentracker.release.xcconfig"; path = "Pods/Target Support Files/Pods-schengentracker/Pods-schengentracker.release.xcconfig"; sourceTree = "<group>"; };
-		ECA47B4620B842E900B02D37 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		EC05A43620BB678200BACFE3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ECA47B8220B8661F00B02D37 /* Ionicons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 		FBC8C743C046423C960F2237 /* libRNFirebase.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFirebase.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -500,8 +500,8 @@
 		13B07FAE1A68108700A75B9A /* schengentracker */ = {
 			isa = PBXGroup;
 			children = (
+				EC05A43620BB678200BACFE3 /* GoogleService-Info.plist */,
 				ECA47B8220B8661F00B02D37 /* Ionicons.ttf */,
-				ECA47B4620B842E900B02D37 /* GoogleService-Info.plist */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -1117,9 +1117,9 @@
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				EC05A43720BB678200BACFE3 /* GoogleService-Info.plist in Resources */,
 				ECA47B8320B8661F00B02D37 /* Ionicons.ttf in Resources */,
 				ECA47B8420B8664500B02D37 /* Info.plist in Resources */,
-				ECA47B4720B842E900B02D37 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
